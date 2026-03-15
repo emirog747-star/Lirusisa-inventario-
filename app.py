@@ -3,9 +3,10 @@ import pandas as pd
 from datetime import datetime
 import json
 import os
+from fpdf import FPDF
 
 # --- CONFIGURACIÓN ---
-st.set_page_config(page_title="Bitácora Hamlet y Ofelia", layout="wide")
+st.set_page_config(page_title="Bitácora", layout="wide")
 
 st.markdown("""
     <style>
@@ -29,6 +30,29 @@ def save_data(data):
 
 db = load_data()
 
+# --- FUNCIÓN GENERAR PDF ---
+def generar_pdf(datos_reporte):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(190, 10, "Reporte de Inventario - Bitácora", ln=True, align="C")
+    pdf.set_font("Arial", "", 12)
+    pdf.cell(190, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True, align="C")
+    pdf.ln(10)
+    
+    # Tabla
+    pdf.set_fill_color(200, 200, 200)
+    pdf.cell(95, 10, " Concepto", border=1, fill=True)
+    pdf.cell(95, 10, " Cantidad", border=1, fill=True)
+    pdf.ln()
+    
+    for concepto, valor in datos_reporte.items():
+        pdf.cell(95, 10, f" {concepto}", border=1)
+        pdf.cell(95, 10, f" {valor}", border=1)
+        pdf.ln()
+    
+    return pdf.output(dest='S').encode('latin-1')
+
 with st.sidebar:
     st.title("🔢 Calculadora")
     n1 = st.number_input("Valor A", value=0.0)
@@ -40,7 +64,7 @@ with st.sidebar:
         if operacion == "Multi": st.success(f"Res: {n1*n2}")
         if operacion == "Divi": st.success(f"Res: {n1/n2 if n2 != 0 else 'Error'}")
 
-st.title("🍕 Bitácora de Hamlet y Ofelia")
+st.title("🍕 Bitácora")
 
 taras = {"Ninguno": 0.0, "Cambro Queso": 2.5, "Cambro Peperoni": 1.5, "Cambro Jamón": 1.0, "Cambro Mantequilla": 0.5}
 
@@ -74,9 +98,15 @@ with tab_inv:
 
 with tab_cajas:
     st.header("Cajas y Dips")
-    c14_p = st.number_input("Paquetes Cajas 14'' (50 u)", min_value=0)
-    c14_a = st.number_input("Ajuste manual 14'' +/-", value=0)
-    t_c14 = (c14_p * 50) + c14_a
+    col1, col2 = st.columns(2)
+    with col1:
+        c14_p = st.number_input("Paquetes Cajas 14'' (50 u)", min_value=0)
+        c_deep = st.number_input("Cajas Deep Dish", min_value=0)
+    with col2:
+        c_puff = st.number_input("Cajas Crazy Puff", min_value=0)
+        c_ital = st.number_input("Cajas Pan Italiano", min_value=0)
+    
+    t_c14 = (c14_p * 50)
     st.info(f"Total Cajas 14'': {t_c14}")
     
     st.write("---")
@@ -93,20 +123,10 @@ with tab_masas:
     st.success(f"Equivalente a: {costales:.2f} costales de harina")
 
 with tab_hist:
-    if st.button("💾 FINALIZAR Y GUARDAR"):
-        resumen = {
-            "fecha": datetime.now().strftime("%d/%m/%Y %H:%M"),
-            "datos": {"Harina": round(costales, 2), "Cajas14": t_c14}
-        }
-        db["historial"].append(resumen)
-        save_data(db)
-        st.balloons()
+    # Diccionario para el PDF
+    resumen_dict = {
+        "Harina (Costales)": f"{costales:.2f}",
+        "Cajas 14''": t_c14,
+        "Cajas Deep Dish": c_deep,
+        "Cajas Crazy Puff": c_puff
 
-    st.write("### Historial")
-    for i, h in enumerate(reversed(db["historial"])):
-        col1, col2 = st.columns([4, 1])
-        col1.write(f"📅 {h['fecha']} - Harina: {h['datos']['Harina']}")
-        if col2.button("🗑️", key=f"del_{i}"):
-            db["historial"].pop(-(i+1))
-            save_data(db)
-            st.rerun()
