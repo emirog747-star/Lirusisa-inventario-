@@ -13,6 +13,8 @@ st.markdown("""
     .stButton>button { width: 100%; height: 3.5em; font-size: 18px; font-weight: bold; border-radius: 10px; }
     .stNumberInput>div>div>input { font-size: 20px; }
     [data-testid="stExpander"] { border: 1px solid #ff4b4b; border-radius: 10px; margin-bottom: 10px; }
+    /* Estilo especial para botones de calculadora */
+    .calc-btn > div > button { height: 2.5em !important; font-size: 16px !important; background-color: #f0f2f6 !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -34,80 +36,42 @@ def save_data(data):
 
 db = load_data()
 
-def generar_pdf(datos_reporte):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(190, 10, "Reporte de Inventario - Bitacora", ln=True, align="C")
-    pdf.set_font("Arial", "", 12)
-    pdf.cell(190, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True, align="C")
-    pdf.ln(10)
-    
-    pdf.set_fill_color(200, 200, 200)
-    pdf.cell(95, 10, " Concepto", border=1, fill=True)
-    pdf.cell(95, 10, " Cantidad", border=1, fill=True)
-    pdf.ln()
-    
-    for concepto, valor in datos_reporte.items():
-        pdf.cell(95, 10, f" {concepto}", border=1)
-        pdf.cell(95, 10, f" {valor}", border=1)
-        pdf.ln()
-    
-    return pdf.output(dest='S').encode('latin-1')
+# --- CALCULADORA DE BOTONES EN SIDEBAR ---
+if "calc_val" not in st.session_state:
+    st.session_state.calc_val = ""
 
-# --- SIDEBAR ---
+def click_button(val):
+    if val == "=":
+        try:
+            # Reemplazamos x por * para que Python entienda la multiplicación
+            st.session_state.calc_val = str(eval(st.session_state.calc_val.replace('x', '*')))
+        except:
+            st.session_state.calc_val = "Error"
+    elif val == "C":
+        st.session_state.calc_val = ""
+    else:
+        st.session_state.calc_val += str(val)
+
 with st.sidebar:
     st.title("🔢 Calculadora")
-    op_in = st.text_input("Operación:", placeholder="0", key="calc_input")
-    if st.button("="):
-        try:
-            res_calc = eval(op_in.replace('x', '*').replace('X', '*'))
-            st.success(f"Res: {res_calc}")
-        except: st.error("Error")
+    # Pantalla de la calculadora
+    st.text_input("Pantalla:", value=st.session_state.calc_val, disabled=True)
     
-    st.write("---")
-    st.title("📝 Notas")
-    nota_t = st.text_area("Apuntes:", value=db.get("notas", ""), height=200)
-    if st.button("💾 Guardar Notas"):
-        db["notas"] = nota_t
-        save_data(db)
-        st.toast("Guardado")
-
-st.title("🍕 Bitácora")
-
-taras = {"Ninguno": 0.0, "Cambro Queso": 2.5, "Cambro Peperoni": 1.5, "Cambro Jamón": 1.0, "Cambro Mantequilla": 0.5}
-
-def sec_peso(nombre, lb_c, lb_b, lb_cam=None):
-    with st.expander(f"📦 {nombre}", expanded=False):
-        c = st.number_input(f"Cajas ({lb_c} lb)", min_value=0, step=1, key=f"{nombre}_c")
-        b = st.number_input(f"Bolsas ({lb_b} lb)", min_value=0, step=1, key=f"{nombre}_b")
-        total = (c * lb_c) + (b * lb_b)
-        if lb_cam:
-            cam = st.number_input(f"Cambros ({lb_cam} lb)", min_value=0, step=1, key=f"{nombre}_cam")
-            total += (cam * lb_cam)
-        st.write("---")
-        p_bas = st.number_input("Peso Báscula", value=0.0, step=0.1, key=f"{nombre}_s")
-        t_tara = st.selectbox("Tipo de Cambro", list(taras.keys()), key=f"{nombre}_t")
-        p_neto = max(0.0, p_bas - taras[t_tara]) if p_bas > 0 else 0
-        tot_f = total + p_neto
-        st.success(f"Total {nombre}: {tot_f:.2f} lbs")
-        return tot_f
-
-t1, t2, t3, t4, t5 = st.tabs(["🥩 Proteínas", "📦 Empaques", "🥤 Bebidas", "🥖 Masas", "📜 Historial"])
-
-with t1:
-    v_toc = sec_peso("Tocino", 19.8, 2.2, 4.4)
-    v_jam = sec_peso("Jamón", 17.6, 2.2, 4.4)
-    v_pep = sec_peso("Peperoni", 25.0, 12.5, 6.25)
-    v_que = sec_peso("Queso Pizza", 20.0, 20.0, 20.0)
-    v_sal = sec_peso("Salchicha", 20.0, 5.0, 5.0)
-    v_bar = sec_peso("Barra Queso", 20.0, 5.0)
-    v_pin = sec_peso("Piña", 26.8, 6.7, 6.7)
-
-with t2:
-    st.header("Cajas y Dips")
+    # Grid de botones
+    cols = st.columns(4)
+    btns = [
+        ['7', '8', '9', '/'],
+        ['4', '5', '6', 'x'],
+        ['1', '2', '3', '-'],
+        ['0', '.', 'C', '+']
+    ]
     
-    st.subheader("Cajas 14''")
-    c1, c2 = st.columns(2)
-    with c1: c14p = st.number_input("Paq 14'' (50u)", min_value=0, step=1, key="c14p")
-    with c2: c14u = st.number_input("Sueltas 14''", ste
+    for row in btns:
+        for i, b_val in enumerate(row):
+            if cols[i].button(b_val, key=f"btn_{b_val}_{row}"):
+                click_button(b_val)
+    
+    if st.button("=", key="btn_equal"):
+        click_button("=")
+
+    st.write("
