@@ -58,121 +58,12 @@ def generar_pdf(datos_reporte):
 # --- SIDEBAR ---
 with st.sidebar:
     st.title("🔢 Calculadora")
-    operacion_input = st.text_input("Operación (ej: 10+5)", placeholder="0", key="calc_input")
+    op_in = st.text_input("Operación:", placeholder="0", key="calc_input")
     if st.button("="):
         try:
-            calc_ready = operacion_input.replace('x', '*').replace('X', '*')
-            resultado = eval(calc_ready)
-            st.success(f"Res: {resultado}")
+            res_calc = eval(op_in.replace('x', '*').replace('X', '*'))
+            st.success(f"Res: {res_calc}")
         except: st.error("Error")
     
-    st.write("---")
-    st.title("📝 Notas")
-    nota_temp = st.text_area("Apuntes:", value=db.get("notas", ""), height=200)
-    if st.button("💾 Guardar Notas"):
-        db["notas"] = nota_temp
-        save_data(db)
-        st.toast("Notas guardadas")
-
-st.title("🍕 Bitácora")
-
-taras = {"Ninguno": 0.0, "Cambro Queso": 2.5, "Cambro Peperoni": 1.5, "Cambro Jamón": 1.0, "Cambro Mantequilla": 0.5}
-
-def seccion_peso(nombre, lb_caja, lb_bolsa, lb_cambro=None):
-    with st.expander(f"📦 {nombre}", expanded=False):
-        c = st.number_input(f"Cajas ({lb_caja} lb)", min_value=0, step=1, key=f"{nombre}_c")
-        b = st.number_input(f"Bolsas ({lb_bolsa} lb)", min_value=0, step=1, key=f"{nombre}_b")
-        total = (c * lb_caja) + (b * lb_bolsa)
-        if lb_cambro:
-            cam = st.number_input(f"Cambros ({lb_cambro} lb)", min_value=0, step=1, key=f"{nombre}_cam")
-            total += (cam * lb_cambro)
-        st.write("---")
-        st.write("⚖️ Pesaje de Sobras")
-        peso_bascula = st.number_input("Peso Báscula", value=0.0, step=0.1, key=f"{nombre}_sobra")
-        tipo_tara = st.selectbox("Tipo de Cambro", list(taras.keys()), key=f"{nombre}_tara")
-        peso_neto_sobra = max(0.0, peso_bascula - taras[tipo_tara]) if peso_bascula > 0 else 0
-        total_final = total + peso_neto_sobra
-        st.success(f"Total {nombre}: {total_final:.2f} lbs")
-        return total_final
-
-tab_inv, tab_cajas, tab_bev, tab_masas, tab_hist = st.tabs(["🥩 Proteínas", "📦 Empaques", "🥤 Bebidas", "🥖 Masas", "📜 Historial"])
-
-with tab_inv:
-    t_tocino = seccion_peso("Tocino", 19.8, 2.2, 4.4)
-    t_jamon = seccion_peso("Jamón", 17.6, 2.2, 4.4)
-    t_pepe = seccion_peso("Peperoni", 25.0, 12.5, 6.25)
-    t_queso = seccion_peso("Queso Pizza", 20.0, 20.0, 20.0)
-    t_salchicha = seccion_peso("Salchicha", 20.0, 5.0, 5.0)
-    t_barra = seccion_peso("Barra Queso", 20.0, 5.0)
-    t_pina = seccion_peso("Piña", 26.8, 6.7, 6.7)
-
-with tab_cajas:
-    st.header("Cajas y Dips")
-    
-    st.subheader("Cajas 14''")
-    col1, col2 = st.columns(2)
-    with col1: c14_p = st.number_input("Paquetes 14'' (50u)", min_value=0, step=1, key="c14p")
-    with col2: c14_u = st.number_input("Sueltas 14''", step=1, key="c14u")
-    t_c14 = (c14_p * 50) + c14_u
-    st.success(f"Total Cajas 14'': {t_c14}")
-
-    st.subheader("Cajas Deep Dish")
-    col3, col4 = st.columns(2)
-    with col3: cd_p = st.number_input("Paquetes Deep (50u)", min_value=0, step=1, key="cdp")
-    with col4: cd_u = st.number_input("Sueltas Deep", step=1, key="cdu")
-    t_cd = (cd_p * 50) + cd_u
-    st.success(f"Total Deep Dish: {t_cd}")
-
-    st.subheader("Cajas Crazy Puff")
-    col5, col6 = st.columns(2)
-    with col5: cp_p = st.number_input("Paquetes Puff (100u)", min_value=0, step=1, key="cpp")
-    with col6: cp_u = st.number_input("Sueltas Puff", step=1, key="cpu")
-    t_cp = (cp_p * 100) + cp_u
-    st.success(f"Total Crazy Puff: {t_cp}")
-
-    st.subheader("Pan Italiano")
-    col7, col8 = st.columns(2)
-    with col7: ci_p = st.number_input("Paquetes Ital (100u)", min_value=0, step=1, key="cip")
-    with col8: ci_u = st.number_input("Sueltas Ital", step=1, key="ciu")
-    t_ci = (ci_p * 100) + ci_u
-    st.success(f"Total Pan Italiano: {t_ci}")
-
-    st.subheader("Bolsas Pan Loco")
-    col9, col10 = st.columns(2)
-    with col9: pl_p = st.number_input("Paquetes Pan Loco (50u)", min_value=0, step=1, key="plp")
-    with col10: pl_u = st.number_input("Sueltas Pan Loco", step=1, key="plu")
-    t_pl = (pl_p * 50) + pl_u
-    st.success(f"Total Pan Loco: {t_pl}")
-
-    st.subheader("Dips")
-    col11, col12 = st.columns(2)
-    with col11: d_p = st.number_input("Cajas Dips (189u)", min_value=0, step=1, key="dcp")
-    with col12: d_u = st.number_input("Sueltas Dips", step=1, key="dcu")
-    t_dips = (d_p * 189) + d_u
-    st.success(f"Total Dips: {t_dips}")
-
-with tab_bev:
-    st.header("Bebidas")
-    
-    st.subheader("Refrescos 600ml")
-    colb1, colb2 = st.columns(2)
-    with colb1: r6p = st.number_input("Paq 600ml (12u)", min_value=0, step=1, key="r6p")
-    with colb2: r6u = st.number_input("Sueltas 600ml", step=1, key="r6u")
-    t_r6 = (r6p * 12) + r6u
-    st.success(f"Total 600ml: {t_r6}")
-
-    st.subheader("Refrescos 1.5L")
-    colb3, colb4 = st.columns(2)
-    with colb3: r15p = st.number_input("Paq 1.5L (12u)", min_value=0, step=1, key="r15p")
-    with colb4: r15u = st.number_input("Sueltas 1.5L", step=1, key="r15u")
-    t_r15 = (r15p * 12) + r15u
-    st.success(f"Total 1.5L: {t_r15}")
-
-    st.subheader("Refrescos 2L")
-    colb5, colb6 = st.columns(2)
-    with colb5: r2p = st.number_input("Paq 2L (8u)", min_value=0, step=1, key="r2p")
-    with colb6: r2u = st.number_input("Sueltas 2L", step=1, key="r2u")
-    t_r2 = (r2p * 8) + r2u
-    st.success(f"Total 2L: {t_r2}")
-
-    st.
+    st.write
+ 
