@@ -1,52 +1,51 @@
-    import itertools
+    import streamlit as st
+import pandas as pd
+from datetime import datetime
+import itertools
 
-# Esta es tu "Base de Datos" original. Nunca la tocaremos.
-productos = {
-    1: {"nombre": "papas", "precio": 20},
-    2: {"nombre": "refresco", "precio": 15},
-    3: {"nombre": "cebolla", "precio": 10},
-    4: {"nombre": "galletas", "precio": 13},
-    5: {"nombre": "nuez", "precio": 19}
-}
+# --- CONFIGURACIÓN VISUAL ---
+st.set_page_config(page_title="Bitácora Hamlet y Ofelia", page_icon="🍕", layout="wide")
 
-def calcular_con_filtro():
-    print("--- MENU DEL DÍA ---")
-    for id_p, info in productos.items():
-        print(f"[{id_p}] {info['nombre']} - ${info['precio']}")
+st.markdown("""
+    <style>
+    .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #FF4B4B; color: white; font-weight: bold; }
+    .stNumberInput>div>div>input { font-size: 1.2em; }
+    [data-testid="stExpander"] { border: 2px solid #FF4B4B; border-radius: 10px; margin-bottom: 10px; }
+    </style>
+    """, unsafe_allow_html=True)
 
-    # 1. Preguntamos qué IDs no están disponibles
-    agotados_input = input("\n¿Qué números están agotados? (ejemplo: 1,4 o deja vacío): ")
-    
-    # Convertimos la entrada en una lista de números
-    ids_agotados = []
-    if agotados_input.strip():
-        ids_agotados = [int(n.strip()) for n in agotados_input.split(",")]
+st.title("🍕 Bitácora de Hamlet y Ofelia")
+st.write(f"Turno: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
-    # 2. EL TRUCO: Creamos una lista 'limpia' usando una "Comprensión de Diccionario"
-    # "Crea 'disponibles' usando productos, PERO solo si el ID no está en la lista de agotados"
-    disponibles = {id_p: info for id_p, info in productos.items() if id_p not in ids_agotados}
+# --- LÓGICA DE DISPONIBILIDAD (El truco del filtro) ---
+st.sidebar.header("🚫 ¿Qué se agotó hoy?")
+puffs_ok = st.sidebar.toggle("Crazy Puffs Disponibles", value=True)
+deep_ok = st.sidebar.toggle("Deep Dish Disponible", value=True)
+italiano_ok = st.sidebar.toggle("Pan Italiano Disponible", value=True)
 
-    # 3. Trabajamos SOLO con la lista 'disponibles'
-    print(f"\nCalculando solo con: {[item['nombre'] for item in disponibles.values()]}")
-    
-    try:
-        objetivo = float(input("¿Cuánto quieres sumar? $"))
-        encontrado = False
-        
-        items_lista = list(disponibles.values())
-        
-        for r in range(1, len(items_lista) + 1):
-            for combo in itertools.combinations(items_lista, r):
-                suma = sum(item['precio'] for item in combo)
-                if suma == objetivo:
-                    nombres = [item['nombre'] for item in combo]
-                    print(f"✔ OPCIÓN: {' + '.join(nombres)} = ${suma}")
-                    encontrado = True
-        
-        if not encontrado:
-            print("No hay combinaciones con lo que queda en inventario.")
+# --- SECCIÓN DE CAJAS ---
+with st.expander("📦 CONTROL DE CAJAS", expanded=True):
+    col1, col2 = st.columns(2)
+    with col1:
+        c_14 = st.number_input("Cajas 14\" (Clásica)", min_value=0, step=1)
+        # Solo mostramos entrada si está disponible
+        c_deep = st.number_input("Cajas Deep Dish", min_value=0, step=1) if deep_ok else 0
+    with col2:
+        c_puff = st.number_input("Cajas de Crazy Puff", min_value=0, step=1) if puffs_ok else 0
+        c_italiano = st.number_input("Cajas de Pan Italiano", min_value=0, step=1) if italiano_ok else 0
 
-    except ValueError:
-        print("Error: Ingresa un número válido.")
+# --- SECCIÓN DE MASAS ---
+with st.expander("🍕 MASAS E INGREDIENTES", expanded=True):
+    c3, c4 = st.columns(2)
+    with c3:
+        m_reg = st.number_input("Bolas Masa Regular", min_value=0, step=1)
+        m_crazy = st.number_input("Bolas Masa Crazy", min_value=0, step=1)
+    with c4:
+        queso = st.number_input("Queso (kg)", min_value=0.0, step=0.1)
+        pep = st.number_input("Pepperoni (paquetes)", min_value=0, step=1)
 
-calcular_con_filtro()
+# --- SECCIÓN DE MERMA ---
+with st.expander("🗑️ REGISTRO DE MERMA", expanded=True):
+    merma = st.number_input("Peso Merma Masa (kg)", min_value=0.0, step=0.01)
+
+#
