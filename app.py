@@ -30,12 +30,12 @@ def save_data(data):
 
 db = load_data()
 
-# --- FUNCIÓN GENERAR PDF ---
+# --- FUNCIÓN GENERAR PDF (CORREGIDA) ---
 def generar_pdf(datos_reporte):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", "B", 16)
-    pdf.cell(190, 10, "Reporte de Inventario - Bitácora", ln=True, align="C")
+    pdf.cell(190, 10, "Reporte de Inventario - Bitacora", ln=True, align="C")
     pdf.set_font("Arial", "", 12)
     pdf.cell(190, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True, align="C")
     pdf.ln(10)
@@ -123,10 +123,43 @@ with tab_masas:
     st.success(f"Equivalente a: {costales:.2f} costales de harina")
 
 with tab_hist:
-    # Diccionario para el PDF
+    # Diccionario para el PDF (VERIFICADO)
     resumen_dict = {
         "Harina (Costales)": f"{costales:.2f}",
         "Cajas 14''": t_c14,
         "Cajas Deep Dish": c_deep,
-        "Cajas Crazy Puff": c_puff
+        "Cajas Crazy Puff": c_puff,
+        "Cajas Pan Italiano": c_ital,
+        "Dips Totales": t_dips,
+        "Queso Pizza (lbs)": f"{t_queso:.2f}",
+        "Peperoni (lbs)": f"{t_pepe:.2f}"
+    }
 
+    c_save, c_pdf = st.columns(2)
+    with c_save:
+        if st.button("💾 GUARDAR EN HISTORIAL"):
+            resumen = {"fecha": datetime.now().strftime("%d/%m/%Y %H:%M"), "datos": resumen_dict}
+            db["historial"].append(resumen)
+            save_data(db)
+            st.balloons()
+    
+    with c_pdf:
+        try:
+            pdf_data = generar_pdf(resumen_dict)
+            st.download_button(label="📄 DESCARGAR PDF", data=pdf_data, file_name=f"inventario_{datetime.now().strftime('%d%m%Y')}.pdf", mime="application/pdf")
+        except Exception as e:
+            st.warning("Asegurate de tener 'fpdf' en requirements.txt")
+
+    st.write("### Historial")
+    for i, h in enumerate(reversed(db["historial"])):
+        colh1, colh2 = st.columns([4, 1])
+        # Usamos .get() para evitar el error de 'KeyError' si falta la fecha
+        fecha_h = h.get('fecha', 'Sin fecha')
+        datos_h = h.get('datos', {})
+        harina_h = datos_h.get('Harina (Costales)', '0.00')
+        
+        colh1.write(f"📅 {fecha_h} - Harina: {harina_h}")
+        if colh2.button("🗑️", key=f"del_{i}"):
+            db["historial"].pop(-(i+1))
+            save_data(db)
+            st.rerun()
