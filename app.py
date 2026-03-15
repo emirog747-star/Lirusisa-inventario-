@@ -21,7 +21,10 @@ DATA_FILE = "bitacora_data.json"
 def load_data():
     if os.path.exists(DATA_FILE):
         try:
-            with open(DATA_FILE, "r") as f: return json.load(f)
+            with open(DATA_FILE, "r") as f: 
+                data = json.load(f)
+                if "notas" not in data: data["notas"] = ""
+                return data
         except: return {"historial": [], "notas": ""}
     return {"historial": [], "notas": ""}
 
@@ -91,7 +94,7 @@ def seccion_peso(nombre, lb_caja, lb_bolsa, lb_cambro=None):
         st.error(f"Total {nombre}: {total_final:.2f} lbs")
         return total_final
 
-tab_inv, tab_cajas, tab_masas, tab_hist = st.tabs(["🥩 Carnes/Queso", "📦 Empaques/Dips", "🥖 Masas", "📜 Historial"])
+tab_inv, tab_cajas, tab_bev, tab_masas, tab_hist = st.tabs(["🥩 Carnes/Queso", "📦 Empaques", "🥤 Bebidas", "🥖 Masas", "📜 Historial"])
 
 with tab_inv:
     t_tocino = seccion_peso("Tocino", 19.8, 2.2, 4.4)
@@ -104,98 +107,17 @@ with tab_inv:
 
 with tab_cajas:
     st.header("Cajas y Dips")
-    
     # Cajas 14''
     col1, col2 = st.columns(2)
     with col1: c14_p = st.number_input("Paquetes 14'' (50 u)", min_value=0, step=1, key="c14p")
     with col2: c14_u = st.number_input("Sueltas 14''", step=1, key="c14u")
     t_c14 = (c14_p * 50) + c14_u
-    st.info(f"Total 14'': {t_c14}")
-    
     # Deep Dish
     col3, col4 = st.columns(2)
     with col3: cd_p = st.number_input("Paquetes Deep (50 u)", min_value=0, step=1, key="cdp")
     with col4: cd_u = st.number_input("Sueltas Deep", step=1, key="cdu")
     t_c_deep = (cd_p * 50) + cd_u
-    st.info(f"Total Deep: {t_c_deep}")
-
     # Crazy Puff
     col5, col6 = st.columns(2)
-    with col5: cp_p = st.number_input("Paquetes Puff (100 u)", min_value=0, step=1, key="cpp")
-    with col6: cp_u = st.number_input("Sueltas Puff", step=1, key="cpu")
-    t_c_puff = (cp_p * 100) + cp_u
-    st.info(f"Total Puff: {t_c_puff}")
-
-    # Pan Italiano
-    col7, col8 = st.columns(2)
-    with col7: ci_p = st.number_input("Paquetes Ital (100 u)", min_value=0, step=1, key="cip")
-    with col8: ci_u = st.number_input("Sueltas Ital", step=1, key="ciu")
-    t_c_ital = (ci_p * 100) + ci_u
-    st.info(f"Total Pan Ital: {t_c_ital}")
-
-    # Pan Loco
-    st.write("---")
-    st.subheader("Pan Loco")
-    col_pl1, col_pl2 = st.columns(2)
-    with col_pl1: pl_p = st.number_input("Paquetes Pan Loco (50 u)", min_value=0, step=1, key="plp")
-    with col_pl2: pl_u = st.number_input("Sueltas Pan Loco", step=1, key="plu")
-    t_pl = (pl_p * 50) + pl_u
-    st.info(f"Total Pan Loco: {t_pl}")
-    
-    st.write("---")
-    col9, col10 = st.columns(2)
-    with col9: d_c = st.number_input("Dips (Caja 189)", min_value=0, step=1, key="dcj")
-    with col10: d_s = st.number_input("Dips (Sueltos)", step=1, key="dsj")
-    t_dips = (d_c * 189) + d_s
-    st.info(f"Total Dips: {t_dips}")
-
-with tab_masas:
-    st.header("Inventario de Harina")
-    c_cerrados = st.number_input("Costales Cerrados", min_value=0, step=1, key="h_cost")
-    b18 = st.number_input("Bolitas de 18 oz", min_value=0, step=1, key="h_18")
-    b10 = st.number_input("Bolitas de 10 oz", min_value=0, step=1, key="h_10")
-    # Conversión: Bolitas a costales + costales físicos
-    total_costales = c_cerrados + (b18 / 38) + (b10 / 59)
-    st.success(f"Inventario Total: {total_costales:.2f} costales")
-
-with tab_hist:
-    resumen_dict = {
-        "Harina (Total Costales)": f"{total_costales:.2f}",
-        "Cajas 14''": t_c14,
-        "Cajas Deep Dish": t_c_deep,
-        "Cajas Crazy Puff": t_c_puff,
-        "Cajas Pan Ital": t_c_ital,
-        "Bolsas Pan Loco": t_pl,
-        "Dips Totales": t_dips,
-        "Queso Pizza (lbs)": f"{t_queso:.2f}",
-        "Peperoni (lbs)": f"{t_pepe:.2f}",
-        "Jamon (lbs)": f"{t_jamon:.2f}",
-        "Tocino (lbs)": f"{t_tocino:.2f}",
-        "Salchicha Ital. (lbs)": f"{t_salchicha:.2f}",
-        "Piña (lbs)": f"{t_pina:.2f}"
-    }
-
-    c_save, c_pdf = st.columns(2)
-    with c_save:
-        if st.button("💾 GUARDAR EN HISTORIAL"):
-            resumen = {"fecha": datetime.now().strftime("%d/%m/%Y %H:%M"), "datos": resumen_dict}
-            db["historial"].append(resumen)
-            save_data(db)
-            st.balloons()
-    
-    with c_pdf:
-        try:
-            pdf_data = generar_pdf(resumen_dict)
-            st.download_button(label="📄 DESCARGAR PDF", data=pdf_data, file_name=f"inventario_{datetime.now().strftime('%d%m%Y')}.pdf", mime="application/pdf")
-        except Exception as e: st.error(f"Error: {e}")
-
-    st.write("### Historial")
-    for i, h in enumerate(reversed(db["historial"])):
-        colh1, colh2 = st.columns([4, 1])
-        fecha_h = h.get('fecha', 'Sin fecha')
-        harina_h = h.get('datos', {}).get('Harina (Total Costales)', '0.00')
-        colh1.write(f"📅 {fecha_h} - Harina: {harina_h}")
-        if colh2.button("🗑️", key=f"del_{i}"):
-            db["historial"].pop(-(i+1))
-            save_data(db)
-            st.rerun()
+    with col5: cp_p = st.number_input("Paquetes Puff (100 u)", min_value=0, step=1, key
+ 
