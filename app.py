@@ -51,16 +51,19 @@ def generar_pdf(datos_reporte):
     
     return pdf.output(dest='S').encode('latin-1')
 
+# --- CALCULADORA ESTILO ESTÁNDAR ---
 with st.sidebar:
     st.title("🔢 Calculadora")
-    n1 = st.number_input("Valor A", value=0.0)
-    n2 = st.number_input("Valor B", value=0.0)
-    operacion = st.radio("Operación", ["Suma", "Resta", "Multi", "Divi"])
-    if st.button("Calcular"):
-        if operacion == "Suma": st.success(f"Res: {n1+n2}")
-        if operacion == "Resta": st.success(f"Res: {n1-n2}")
-        if operacion == "Multi": st.success(f"Res: {n1*n2}")
-        if operacion == "Divi": st.success(f"Res: {n1/n2 if n2 != 0 else 'Error'}")
+    operacion_input = st.text_input("Ingresa operación (ej: 10+5)", placeholder="0")
+    if st.button("="):
+        try:
+            # Reemplazamos 'x' por '*' por si el usuario lo usa por costumbre
+            calc_ready = operacion_input.replace('x', '*').replace('X', '*')
+            resultado = eval(calc_ready)
+            st.success(f"Resultado: {resultado}")
+        except Exception:
+            st.error("Operación no válida")
+    st.caption("Usa: + , - , * , /")
 
 st.title("🍕 Bitácora")
 
@@ -68,11 +71,11 @@ taras = {"Ninguno": 0.0, "Cambro Queso": 2.5, "Cambro Peperoni": 1.5, "Cambro Ja
 
 def seccion_peso(nombre, lb_caja, lb_bolsa, lb_cambro=None):
     with st.expander(f"📦 {nombre}", expanded=False):
-        c = st.number_input(f"Cajas ({lb_caja} lb)", min_value=0, key=f"{nombre}_c")
-        b = st.number_input(f"Bolsas ({lb_bolsa} lb)", min_value=0, key=f"{nombre}_b")
+        c = st.number_input(f"Cajas ({lb_caja} lb)", min_value=0, step=1, key=f"{nombre}_c")
+        b = st.number_input(f"Bolsas ({lb_bolsa} lb)", min_value=0, step=1, key=f"{nombre}_b")
         total = (c * lb_caja) + (b * lb_bolsa)
         if lb_cambro:
-            cam = st.number_input(f"Cambros Llenos ({lb_cambro} lb)", min_value=0, key=f"{nombre}_cam")
+            cam = st.number_input(f"Cambros Llenos ({lb_cambro} lb)", min_value=0, step=1, key=f"{nombre}_cam")
             total += (cam * lb_cambro)
         st.write("---")
         st.write("⚖️ Pesaje de Sobras")
@@ -99,46 +102,47 @@ with tab_cajas:
     
     st.subheader("Cajas 14''")
     col1, col2 = st.columns(2)
-    with col1: c14_p = st.number_input("Paquetes 14'' (50 u)", min_value=0, key="c14_p")
-    with col2: c14_u = st.number_input("Unidades sueltas 14''", key="c14_u")
+    with col1: c14_p = st.number_input("Paquetes 14'' (50 u)", min_value=0, step=1, key="c14_p")
+    with col2: c14_u = st.number_input("Unidades sueltas 14''", step=1, key="c14_u")
     t_c14 = (c14_p * 50) + c14_u
     st.info(f"Total Cajas 14'': {t_c14}")
     
     st.write("---")
     st.subheader("Cajas Deep Dish")
     col3, col4 = st.columns(2)
-    with col3: cd_p = st.number_input("Paquetes Deep Dish (50 u)", min_value=0, key="cd_p")
-    with col4: cd_u = st.number_input("Unidades sueltas Deep Dish", key="cd_u")
+    with col3: cd_p = st.number_input("Paquetes Deep Dish (50 u)", min_value=0, step=1, key="cd_p")
+    with col4: cd_u = st.number_input("Unidades sueltas Deep Dish", step=1, key="cd_u")
     t_c_deep = (cd_p * 50) + cd_u
     st.info(f"Total Deep Dish: {t_c_deep}")
 
     st.write("---")
     st.subheader("Cajas Crazy Puff")
     col5, col6 = st.columns(2)
-    with col5: cp_p = st.number_input("Paquetes Crazy Puff (100 u)", min_value=0, key="cp_p")
-    with col6: cp_u = st.number_input("Unidades sueltas Crazy Puff", key="cp_u")
+    with col5: cp_p = st.number_input("Paquetes Crazy Puff (100 u)", min_value=0, step=1, key="cp_p")
+    with col6: cp_u = st.number_input("Unidades sueltas Crazy Puff", step=1, key="cp_u")
     t_c_puff = (cp_p * 100) + cp_u
     st.info(f"Total Crazy Puff: {t_c_puff}")
 
     st.write("---")
     st.subheader("Cajas Pan Italiano")
     col7, col8 = st.columns(2)
-    with col7: ci_p = st.number_input("Paquetes Pan Italiano (100 u)", min_value=0, key="ci_p")
-    with col8: ci_u = st.number_input("Unidades sueltas Pan Italiano", key="ci_u")
+    with col7: ci_p = st.number_input("Paquetes Pan Italiano (100 u)", min_value=0, step=1, key="ci_p")
+    with col8: ci_u = st.number_input("Unidades sueltas Pan Italiano", step=1, key="ci_u")
     t_c_ital = (ci_p * 100) + ci_u
     st.info(f"Total Pan Italiano: {t_c_ital}")
     
     st.write("---")
     st.subheader("Dips")
-    d_c = st.number_input("Dips (Cajas de 189)", min_value=0, key="dc")
-    d_s = st.number_input("Dips (Unidades sueltas)", key="ds")
+    col9, col10 = st.columns(2)
+    with col9: d_c = st.number_input("Dips (Cajas de 189)", min_value=0, step=1, key="dc")
+    with col10: d_s = st.number_input("Dips (Unidades sueltas)", step=1, key="ds")
     t_dips = (d_c * 189) + d_s
     st.info(f"Total Dips: {t_dips}")
 
 with tab_masas:
     st.header("Cálculo de Harina")
-    b18 = st.number_input("Bolitas de 18 oz", min_value=0)
-    b10 = st.number_input("Bolitas de 10 oz", min_value=0)
+    b18 = st.number_input("Bolitas de 18 oz", min_value=0, step=1)
+    b10 = st.number_input("Bolitas de 10 oz", min_value=0, step=1)
     costales = (b18 / 38) + (b10 / 59)
     st.success(f"Equivalente a: {costales:.2f} costales de harina")
 
@@ -184,3 +188,5 @@ with tab_hist:
             db["historial"].pop(-(i+1))
             save_data(db)
             st.rerun()
+
+        
