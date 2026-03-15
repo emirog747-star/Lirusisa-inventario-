@@ -17,15 +17,15 @@ st.markdown("""
 st.title("🍕 Bitácora de Hamlet y Ofelia")
 st.write(f"Fecha de registro: {datetime.now().strftime('%d/%m/%Y')}")
 
-# --- SECCIÓN DE HARINA (Corregida según tu foto) ---
+# --- SECCIÓN DE HARINA ---
 with st.expander("🍞 CONTROL DE HARINA", expanded=True):
-    costales_abiertos = st.number_input("Costales abiertos (Unidad)", min_value=0.0, step=0.01, value=0.45)
+    costales_abiertos = st.number_input("Costales abiertos (Unidad)", min_value=0.0, step=0.01, value=0.0)
     costales_cerrados = st.number_input("Costales cerrados (Unidad)", min_value=0, step=1)
     
-    total_harina = costales_abiertos + costales_cerrados
+    total_harina = round(costales_abiertos + costales_cerrados, 2)
     st.markdown(f'<div class="metric-box">Equivalente a: {total_harina} costales de harina</div>', unsafe_allow_html=True)
 
-# --- SECCIÓN DE CAJAS (Agregadas las que faltaban) ---
+# --- SECCIÓN DE CAJAS ---
 with st.expander("📦 CONTROL DE CAJAS", expanded=True):
     col1, col2 = st.columns(2)
     with col1:
@@ -48,7 +48,7 @@ with st.expander("🍕 INVENTARIO DE PRODUCTOS", expanded=True):
 # --- BOTONES DE ACCIÓN ---
 st.divider()
 datos = {
-    "Producto": ["Harina Total", "Caja 14", "Caja Deep", "Caja Puff", "Caja Italiano", "Masa Reg", "Masa Crazy", "Queso", "Pep"],
+    "Producto": ["Harina Total", "Caja 14", "Caja Deep", "Caja Puff", "Caja Italiano", "Masa Regular", "Masa Crazy", "Queso", "Pepperoni"],
     "Cantidad": [total_harina, caja_14, caja_deep, caja_puff, caja_italiano, masa_reg, masa_crazy, queso, pep]
 }
 df = pd.DataFrame(datos)
