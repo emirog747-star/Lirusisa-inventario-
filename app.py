@@ -79,19 +79,12 @@ taras = {"Ninguno": 0.0, "Cambro Queso": 2.5, "Cambro Peperoni": 1.5, "Cambro Ja
 
 def sec_peso(nombre, lb_c, lb_b, lb_cam=None):
     with st.expander(f"📦 {nombre}", expanded=False):
-        # Campos de Cajas y Cambros solo si se proporcionan valores (Boneless no los usa)
-        total = 0.0
-        if lb_c > 0:
-            c = st.number_input(f"Cajas ({lb_c} lb)", min_value=0, step=1, key=f"{nombre}_c")
-            total += (c * lb_c)
-        
+        c = st.number_input(f"Cajas ({lb_c} lb)", min_value=0, step=1, key=f"{nombre}_c")
         b = st.number_input(f"Bolsas ({lb_b} lb)", min_value=0, step=1, key=f"{nombre}_b")
-        total += (b * lb_b)
-        
+        total = (c * lb_c) + (b * lb_b)
         if lb_cam:
             cam = st.number_input(f"Cambros ({lb_cam} lb)", min_value=0, step=1, key=f"{nombre}_cam")
             total += (cam * lb_cam)
-            
         st.write("---")
         p_bas = st.number_input("Peso Báscula", value=0.0, step=0.1, key=f"{nombre}_s")
         t_tara = st.selectbox("Tipo de Cambro", list(taras.keys()), key=f"{nombre}_t")
@@ -110,8 +103,6 @@ with t1:
     v_sal = sec_peso("Salchicha", 20.0, 5.0, 5.0)
     v_bar = sec_peso("Barra Queso", 20.0, 5.0)
     v_pin = sec_peso("Piña", 26.8, 6.7, 6.7)
-    # Agregado Boneless: Sin cajas (0), Bolsa 4.4 lb, Sin cambros (None)
-    v_bon = sec_peso("Boneless", 0, 4.4, None) 
 
 with t2:
     st.header("Cajas y Dips")
@@ -119,17 +110,4 @@ with t2:
     st.subheader("Cajas 14''")
     c1, c2 = st.columns(2)
     with c1: c14p = st.number_input("Paq 14'' (50u)", min_value=0, step=1, key="c14p")
-    with c2: c14u = st.number_input("Sueltas 14''", min_value=0, step=1, key="c14u")
-    v_c14 = (c14p * 50) + c14u
-    st.success(f"Total 14'': {v_c14}")
-
-    st.subheader("Cajas Deep Dish")
-    c3, c4 = st.columns(2)
-    with c3: cdp = st.number_input("Paq Deep (50u)", min_value=0, step=1, key="cdp")
-    with c4: cdu = st.number_input("Sueltas Deep", min_value=0, step=1, key="cdu")
-    v_cd = (cdp * 50) + cdu
-    st.success(f"Total Deep: {v_cd}")
-
-    # ... (Resto del código de empaques, bebidas y masas se mantiene igual)
-
-# NOTA: Asegúrate de completar las secciones de bebidas y masas si vas a reemplazar todo el archivo.
+    with c2: c14u = st.number_input("Sueltas 14''", ste
