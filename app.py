@@ -30,7 +30,6 @@ def save_data(data):
 
 db = load_data()
 
-# --- FUNCIÓN GENERAR PDF (CORREGIDA) ---
 def generar_pdf(datos_reporte):
     pdf = FPDF()
     pdf.add_page()
@@ -40,7 +39,6 @@ def generar_pdf(datos_reporte):
     pdf.cell(190, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True, align="C")
     pdf.ln(10)
     
-    # Tabla
     pdf.set_fill_color(200, 200, 200)
     pdf.cell(95, 10, " Concepto", border=1, fill=True)
     pdf.cell(95, 10, " Cantidad", border=1, fill=True)
@@ -98,20 +96,32 @@ with tab_inv:
 
 with tab_cajas:
     st.header("Cajas y Dips")
+    
+    # Cajas 14'' con paquetes y unidades
+    st.subheader("Cajas 14''")
     col1, col2 = st.columns(2)
     with col1:
-        c14_p = st.number_input("Paquetes Cajas 14'' (50 u)", min_value=0)
-        c_deep = st.number_input("Cajas Deep Dish", min_value=0)
+        c14_p = st.number_input("Paquetes (50 u)", min_value=0, key="c14_p")
     with col2:
-        c_puff = st.number_input("Cajas Crazy Puff", min_value=0)
-        c_ital = st.number_input("Cajas Pan Italiano", min_value=0)
-    
-    t_c14 = (c14_p * 50)
+        c14_u = st.number_input("Unidades sueltas", min_value=0, key="c14_u")
+    t_c14 = (c14_p * 50) + c14_u
     st.info(f"Total Cajas 14'': {t_c14}")
     
     st.write("---")
-    d_c = st.number_input("Dips (Cajas de 189)", min_value=0)
-    d_s = st.number_input("Dips (Unidades sueltas)", min_value=0)
+    
+    # Otras cajas con unidades sueltas
+    st.subheader("Otras Cajas (Unidades)")
+    col3, col4 = st.columns(2)
+    with col3:
+        c_deep = st.number_input("Cajas Deep Dish", min_value=0, key="cdp")
+        c_puff = st.number_input("Cajas Crazy Puff", min_value=0, key="cpf")
+    with col4:
+        c_ital = st.number_input("Cajas Pan Italiano", min_value=0, key="cit")
+    
+    st.write("---")
+    st.subheader("Dips")
+    d_c = st.number_input("Dips (Cajas de 189)", min_value=0, key="dc")
+    d_s = st.number_input("Dips (Unidades sueltas)", min_value=0, key="ds")
     t_dips = (d_c * 189) + d_s
     st.info(f"Total Dips: {t_dips}")
 
@@ -123,7 +133,6 @@ with tab_masas:
     st.success(f"Equivalente a: {costales:.2f} costales de harina")
 
 with tab_hist:
-    # Diccionario para el PDF (VERIFICADO)
     resumen_dict = {
         "Harina (Costales)": f"{costales:.2f}",
         "Cajas 14''": t_c14,
@@ -153,7 +162,6 @@ with tab_hist:
     st.write("### Historial")
     for i, h in enumerate(reversed(db["historial"])):
         colh1, colh2 = st.columns([4, 1])
-        # Usamos .get() para evitar el error de 'KeyError' si falta la fecha
         fecha_h = h.get('fecha', 'Sin fecha')
         datos_h = h.get('datos', {})
         harina_h = datos_h.get('Harina (Costales)', '0.00')
@@ -163,3 +171,4 @@ with tab_hist:
             db["historial"].pop(-(i+1))
             save_data(db)
             st.rerun()
+        
