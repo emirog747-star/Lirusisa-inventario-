@@ -153,29 +153,29 @@ with t3:
     st.header("Bebidas")
     st.subheader("600ml")
     b1, b2 = st.columns(2)
-    with b1: r6p = st.number_input("Paq 600ml (12u)", min_value=0, key="r6p")
-    with b2: r6u = st.number_input("Sueltas 600ml", key="r6u")
+    with b1: r6p = st.number_input("Paq 600ml (12u)", min_value=0, step=1, key="r6p")
+    with b2: r6u = st.number_input("Sueltas 600ml", step=1, key="r6u")
     v_r6 = (r6p * 12) + r6u
     st.success(f"Total 600ml: {v_r6}")
 
     st.subheader("1.5L")
     b3, b4 = st.columns(2)
-    with b3: r15p = st.number_input("Paq 1.5L (12u)", min_value=0, key="r15p")
-    with b4: r15u = st.number_input("Sueltas 1.5L", key="r15u")
+    with b3: r15p = st.number_input("Paq 1.5L (12u)", min_value=0, step=1, key="r15p")
+    with b4: r15u = st.number_input("Sueltas 1.5L", step=1, key="r15u")
     v_r15 = (r15p * 12) + r15u
     st.success(f"Total 1.5L: {v_r15}")
 
     st.subheader("2L")
     b5, b6 = st.columns(2)
-    with b5: r2p = st.number_input("Paq 2L (8u)", min_value=0, key="r2p")
-    with b6: r2u = st.number_input("Sueltas 2L", key="r2u")
+    with b5: r2p = st.number_input("Paq 2L (8u)", min_value=0, step=1, key="r2p")
+    with b6: r2u = st.number_input("Sueltas 2L", step=1, key="r2u")
     v_r2 = (r2p * 8) + r2u
     st.success(f"Total 2L: {v_r2}")
 
     st.subheader("Agua 600ml")
     b7, b8 = st.columns(2)
-    with b7: ap = st.number_input("Paq Agua (12u)", min_value=0, key="ap")
-    with b8: au = st.number_input("Sueltas Agua", key="au")
+    with b7: ap = st.number_input("Paq Agua (12u)", min_value=0, step=1, key="ap")
+    with b8: au = st.number_input("Sueltas Agua", step=1, key="au")
     v_a = (ap * 12) + au
     st.success(f"Total Agua: {v_a}")
 
