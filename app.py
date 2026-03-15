@@ -184,7 +184,7 @@ with t4:
     hc = st.number_input("Costales", min_value=0, step=1, key="hc")
     h18 = st.number_input("Bol 18 oz", min_value=0, step=1, key="h18")
     h10 = st.number_input("Bol 10 oz", min_value=0, step=1, key="h10")
-    v_h = hc + (h18/38) + (h10/59)
+    v_h = hc + (h18/38) + (h10/69)
     st.success(f"Total: {v_h:.2f} costales")
 
 with t5:
