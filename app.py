@@ -1,11 +1,10 @@
-
 import streamlit as st
 import pandas as pd
 from datetime import datetime
 import json
 import os
 
-# --- CONFIGURACIÓN VISUAL (Tu diseño original) ---
+# --- CONFIGURACIÓN VISUAL ---
 st.set_page_config(page_title="Bitácora Hamlet y Ofelia", page_icon="🍕", layout="wide")
 
 st.markdown("""
@@ -19,7 +18,7 @@ st.markdown("""
 st.title("🍕 Bitácora de Hamlet y Ofelia")
 st.write(f"Fecha: {datetime.now().strftime('%d/%m/%Y')}")
 
-# --- SECCIÓN DE CAJAS (Actualizada con las que faltaban) ---
+# --- SECCIÓN DE CAJAS (Aquí agregué las 3 que faltaban) ---
 with st.expander("📦 CONTROL DE CAJAS", expanded=True):
     col1, col2 = st.columns(2)
     with col1:
@@ -51,21 +50,23 @@ datos = {
 }
 df = pd.DataFrame(datos)
 
-# --- BOTONES DE GUARDADO (Lo nuevo) ---
+# --- BOTONES DE ACCIÓN ---
 col_btn1, col_btn2 = st.columns(2)
 
 with col_btn1:
-    # Generar CSV para descargar
+    # Esta parte crea el archivo Excel/CSV para descargar
     csv = df.to_csv(index=False).encode('utf-8')
     st.download_button(
-        label="💾 GUARDAR Y DESCARGAR EXCEL",
+        label="💾 GUARDAR Y DESCARGAR REPORTE",
         data=csv,
         file_name=f"inventario_{datetime.now().strftime('%d_%m_%Y')}.csv",
         mime="text/csv",
     )
 
 with col_btn2:
-    if st.button("🔄 LIMPIAR PARA NUEVO TURNO"):
+    # Este botón limpia todo para el siguiente turno
+    if st.button("🔄 LIMPIAR DATOS (NUEVO TURNO)"):
         st.rerun()
 
-st.success("Diseño restaurado. Las cajas nuevas y el botón de descarga están listos.")
+st.info("Al presionar 'Guardar', se descargará un archivo en tu celular con el inventario del día.")
+
